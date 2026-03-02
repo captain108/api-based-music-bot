@@ -6,7 +6,7 @@ from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls import PyTgCalls
 from config import *
-from queue import add_song, next_song, get_queue
+from music_queue import add_song, next_song, get_queue
 from player import play
 
 # Clients
