@@ -5,9 +5,10 @@ import requests
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pytgcalls import PyTgCalls
+from pytgcalls.types import MediaStream, Update
+from pytgcalls.types.stream import StreamEnded
 from config import *
 from music_queue import add_song, next_song, get_queue
-from player import play
 
 # Clients
 bot = Client("bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
@@ -16,15 +17,24 @@ call = PyTgCalls(user)
 
 START_IMAGE_FOLDER = "assets"
 
+
+# Random banner
 def random_banner():
     files = os.listdir(START_IMAGE_FOLDER)
     images = [f for f in files if f.endswith((".jpg", ".png"))]
     return os.path.join(START_IMAGE_FOLDER, random.choice(images))
 
-async def fetch_api(url):
-    r = requests.get(f"{YTDLP_API}?key={YTDLP_KEY}&url={url}")
+
+# Fetch API (supports song name)
+async def fetch_api(query):
+    r = requests.get(
+        YTDLP_API,
+        params={"key": YTDLP_KEY, "url": f"ytsearch:{query}"}
+    )
     return r.json()
 
+
+# Start command
 @bot.on_message(filters.command("start"))
 async def start(_, message):
     await message.reply_photo(
@@ -40,39 +50,55 @@ Owner: @{OWNER_USERNAME}
         ])
     )
 
+
+# Play command
 @bot.on_message(filters.command("play") & filters.group)
 async def play_cmd(_, message):
 
     if len(message.command) < 2:
-        return await message.reply("Usage: /play youtube_link")
+        return await message.reply("Usage: /play song name")
 
-    data = await fetch_api(message.command[1])
+    query = " ".join(message.command[1:])
+    data = await fetch_api(query)
 
     if not data.get("audio_url"):
         return await message.reply("Failed to fetch audio.")
 
     song = {
-        "title": data["title"],
+        "title": data.get("title", "Unknown"),
         "audio_url": data["audio_url"],
-        "thumbnail": data["thumbnail"]
+        "thumbnail": data.get("thumbnail")
     }
 
     add_song(message.chat.id, song)
 
+    # If first in queue, start playing
     if len(get_queue(message.chat.id)) == 1:
-        await play(call, message.chat.id, song)
+        await call.join_group_call(
+            message.chat.id,
+            MediaStream(song["audio_url"])
+        )
 
     await message.reply_photo(
         photo=song["thumbnail"],
         caption=f"🎵 Added to queue:\n{song['title']}"
     )
 
-@call.on_stream_end()
-async def stream_end(_, update):
-    next_track = next_song(update.chat_id)
-    if next_track:
-        await play(call, update.chat_id, next_track)
 
+# Auto Next (Modern v3 way)
+@call.on_update()
+async def stream_end_handler(_, update: Update):
+    if isinstance(update, StreamEnded):
+        chat_id = update.chat_id
+        next_track = next_song(chat_id)
+        if next_track:
+            await call.join_group_call(
+                chat_id,
+                MediaStream(next_track["audio_url"])
+            )
+
+
+# Main
 async def main():
     await bot.start()
     await user.start()
@@ -80,4 +106,5 @@ async def main():
     print("Bot Running...")
     await asyncio.Event().wait()
 
-asyncio.get_event_loop().run_until_complete(main())
+
+asyncio.run(main())
