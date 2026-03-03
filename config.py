@@ -1,15 +1,25 @@
 import os
 
-API_ID = int(os.getenv("API_ID"))
-API_HASH = os.getenv("API_HASH")
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-STRING_SESSION = os.getenv("STRING_SESSION")
+def getenv(name, default=None):
+    return os.getenv(name, default)
 
-YTDLP_API = os.getenv("YTDLP_API")
-YTDLP_KEY = os.getenv("YTDLP_KEY")
+# Telegram Core
+API_ID = int(getenv("API_ID"))
+API_HASH = getenv("API_HASH")
+BOT_TOKEN = getenv("BOT_TOKEN")
+STRING_SESSION = getenv("STRING_SESSION")
 
-BOT_NAME = os.getenv("BOT_NAME")
-OWNER_NAME = os.getenv("OWNER_NAME")
-OWNER_USERNAME = os.getenv("OWNER_USERNAME")
-CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME")
-SUPPORT_USERNAME = os.getenv("SUPPORT_USERNAME")
+# API
+YTDLP_API = getenv("YTDLP_API")
+YTDLP_KEY = getenv("YTDLP_KEY")
+
+# Bot Info
+BOT_NAME = getenv("BOT_NAME", "Captain Music")
+OWNER_USERNAME = getenv("OWNER_USERNAME", "captainpapaj1")
+SUPPORT_GROUP = getenv("SUPPORT_GROUP", "your_support_group")
+
+# Images
+START_IMG_URL = getenv("START_IMG_URL", "https://files.catbox.moe/34xlvu.jpg")
+PING_IMG_URL = getenv("PING_IMG_URL", "https://files.catbox.moe/34xlvu.jpg")
+STREAM_IMG_URL = getenv("STREAM_IMG_URL", "https://files.catbox.moe/34xlvu.jpg")
+QUEUE_IMG_URL = getenv("QUEUE_IMG_URL", "https://files.catbox.moe/34xlvu.jpg")
