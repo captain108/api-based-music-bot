@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-RUN apt-get update && apt-get install -y ffmpeg git
+RUN apt-get update && apt-get install -y ffmpeg git build-essential
 
 WORKDIR /app
 COPY . .
