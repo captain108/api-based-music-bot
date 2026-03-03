@@ -1,6 +1,6 @@
 import asyncio
 import requests
-from pyrogram import Client, filters
+from pyrogram import Client, filters, idle
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import UserNotParticipant, ChatAdminRequired
 from pytgcalls import PyTgCalls
@@ -225,6 +225,7 @@ async def main():
     await user.start()
     await call.start()
     print("Bot Running...")
-    await asyncio.Event().wait()
+    await idle()
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
